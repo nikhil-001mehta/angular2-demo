@@ -1,14 +1,25 @@
 import { Component, Input, Injectable, OnInit  } from '@angular/core';
 import { ActivatedRoute, Params }   from '@angular/router';
 import { Location } from '@angular/common';
+import { Http, Response } from '@angular/http';
+import 'rxjs/add/operator/toPromise';
+
+let HEROES: Hero[];
 
 @Injectable()
 export class HeroService {
+	constructor(private http: Http) { 
+		this.http = http;
+	}
 	getHeros(): Promise<Hero[]> {
+		let that = this;
 		let promise : Promise<Hero[]> = new Promise<Hero[]>(function(resolve,reject){
-			setTimeout(function(){
-				resolve(HEROES);
-			},3000);
+			that.http.get('http://jsonplaceholder.typicode.com/users')
+				.toPromise()
+				.then(response => {
+					//resolve(response.json());
+					HEROES = response.json();
+				});
 		})
 		return promise;
 	}
@@ -31,9 +42,18 @@ export class HeroService {
 		  <a routerLink="/heroes" routerLinkActive="active">Heroes</a>
 		</nav>
 		<router-outlet></router-outlet>
-	`
+	`,
+	providers: [HeroService]
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
+	constructor(private heroService: HeroService) { }
+	ngOnInit(): void {
+		this.heroService.getHeros().then(respHeroes => { 
+			debugger;
+			HEROES = respHeroes;
+			this.heroes = HEROES;
+		});
+	}
 	title = "Tour of heroes"
 }
 
@@ -47,20 +67,15 @@ export class AppComponent {
 		  </li>
 		</ul>
 		<hero-details [hero]="selectedHero"></hero-details>
-	`,
-	providers: [HeroService]
+	`
 })
 export class HeroesComponent implements OnInit{
-	constructor(private heroService: HeroService) { }
 	title = 'Tour of Heroes';
 	hero: Hero = {
 	  id: 1,
 	  name: 'Windstorm'
 	};
-	heroes: Hero[];
-	getHeros(): void {
-		this.heroService.getHeros().then(heroes => this.heroes = heroes);
-	}
+	heroes: Hero[] = HEROES;
 	selectedHero= {};
 	changeHeroName(newName: string){
 		this.hero.name = newName;
@@ -68,23 +83,7 @@ export class HeroesComponent implements OnInit{
 	select(selectedHero: Hero): void{
 		this.selectedHero = selectedHero;
 	}
-	ngOnInit(): void {
-		this.getHeros();
-	}
 }
-
-const HEROES: Hero[] = [
-  { id: 11, name: 'Mr. Nice' },
-  { id: 12, name: 'Narco' },
-  { id: 13, name: 'Bombasto' },
-  { id: 14, name: 'Celeritas' },
-  { id: 15, name: 'Magneta' },
-  { id: 16, name: 'RubberMan' },
-  { id: 17, name: 'Dynama' },
-  { id: 18, name: 'Dr IQ' },
-  { id: 19, name: 'Magma' },
-  { id: 20, name: 'Tornado' }
-];
 
 export class Hero {
   id: number;
@@ -93,13 +92,20 @@ export class Hero {
 
 @Component({
 	selector: "hero-details",
-	template: `<div *ngIf=hero><input type="text" [(ngModel)]="hero.name"></div>`,
+	template: `
+		<div *ngIf=hero>
+			<div>
+				<h4>{{hero.name}} details</h4>
+				<label> id: {{hero.id}} </label>
+			</div>
+			<input type="text" [(ngModel)]="hero.name">
+		</div>
+		<button (click)="goBack()">Back</button>
+	`
 })
 export class HeroDetailComponent implements OnInit{
-	constructor(private route:ActivatedRoute){
-		
+	constructor(private route:ActivatedRoute, private location: Location) {
 	}
-	selectedHeroId: any;
 	@Input()
 	hero: Hero;
 	ngOnInit(): void {
@@ -107,6 +113,9 @@ export class HeroDetailComponent implements OnInit{
 			this.hero = HEROES[params["id"]];
 		})
     }
+	goBack(): void {
+		this.location.back();
+	}
 }
 
 @Component({
@@ -120,5 +129,5 @@ export class HeroDetailComponent implements OnInit{
 	`
 })
 export class DashboardComponent{
-	heroes = HEROES
+	heroes: Hero[] = HEROES;
 }

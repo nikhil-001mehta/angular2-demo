@@ -3,11 +3,12 @@ import { BrowserModule } from '@angular/platform-browser';
 import { AppComponent, HeroDetailComponent, HeroesComponent, DashboardComponent  }  from './app.component';
 import { FormsModule }   from '@angular/forms';
 import { RouterModule }   from '@angular/router';
-
+import { HttpModule }    from '@angular/http';
 @NgModule({
   imports:      [ 
 	BrowserModule, 
 	FormsModule, 
+	HttpModule,
 	RouterModule.forRoot([
 	  {
 		path: 'heroes',
