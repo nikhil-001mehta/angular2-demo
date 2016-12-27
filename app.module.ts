@@ -1,6 +1,9 @@
 import { NgModule }      from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { AppComponent, HeroDetailComponent, HeroesComponent, DashboardComponent  }  from './app.component';
+import { AppComponent  }  from './app.component';
+import { HeroDetailComponent } from './hero.detail.component';
+import { HeroesComponent } from './hero.component';
+import { DashboardComponent } from './dashboard.component';
 import { FormsModule }   from '@angular/forms';
 import { RouterModule }   from '@angular/router';
 import { HttpModule }    from '@angular/http';
