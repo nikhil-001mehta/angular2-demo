@@ -1,4 +1,4 @@
-import { Component, Input, Injectable, OnInit  } from '@angular/core';
+import { Component, Input, Injectable, OnInit, ChangeDetectorRef  } from '@angular/core';
 import { ActivatedRoute, Params }   from '@angular/router';
 import { Location } from '@angular/common';
 import { Http, Response } from '@angular/http';
@@ -8,20 +8,17 @@ let HEROES: Hero[];
 
 @Injectable()
 export class HeroService {
-	constructor(private http: Http) { 
+	constructor(private http: Http, private chRef: ChangeDetectorRef) { 
 		this.http = http;
+		this.chRef = chRef;
 	}
-	getHeros(): Promise<Hero[]> {
-		let that = this;
-		let promise : Promise<Hero[]> = new Promise<Hero[]>(function(resolve,reject){
-			that.http.get('http://jsonplaceholder.typicode.com/users')
-				.toPromise()
-				.then(response => {
-					//resolve(response.json());
-					HEROES = response.json();
-				});
-		})
-		return promise;
+	getHeros(): void {
+		this.http.get('http://jsonplaceholder.typicode.com/users')
+			.toPromise()
+			.then(response => {
+				HEROES = response.json();
+				this.chRef.detectChanges();
+			})
 	}
 	getHero(id: any): Promise<Hero> {
 		let promise : Promise<Hero> = new Promise<Hero>(function(resolve,reject){
@@ -48,11 +45,7 @@ export class HeroService {
 export class AppComponent implements OnInit {
 	constructor(private heroService: HeroService) { }
 	ngOnInit(): void {
-		this.heroService.getHeros().then(respHeroes => { 
-			debugger;
-			HEROES = respHeroes;
-			this.heroes = HEROES;
-		});
+		this.heroService.getHeros()
 	}
 	title = "Tour of heroes"
 }
@@ -62,14 +55,14 @@ export class AppComponent implements OnInit {
 	template:`
 		<h2>My Heroes</h2>
 		<ul class="heroes">
-		  <li *ngFor="let hero of heroes" (click)="select(hero)">
+		  <li *ngFor="let hero of countryCodes" (click)="select(hero)">
 			  <span class="badge">{{hero.id}}</span> {{hero.name}}
 		  </li>
 		</ul>
 		<hero-details [hero]="selectedHero"></hero-details>
 	`
 })
-export class HeroesComponent implements OnInit{
+export class HeroesComponent{
 	title = 'Tour of Heroes';
 	hero: Hero = {
 	  id: 1,
@@ -77,6 +70,7 @@ export class HeroesComponent implements OnInit{
 	};
 	heroes: Hero[] = HEROES;
 	selectedHero= {};
+    get countryCodes() { return HEROES; }
 	changeHeroName(newName: string){
 		this.hero.name = newName;
 	}
@@ -121,7 +115,7 @@ export class HeroDetailComponent implements OnInit{
 @Component({
 	selector: "my-dashboard",
 	template: `
-	  <a *ngFor="let hero of heroes; let i = index"  [routerLink]="['/detail', i]"  class="col-1-4">
+	  <a *ngFor="let hero of countryCodes; let i = index"  [routerLink]="['/detail', i]"  class="col-1-4">
 		<div class="module hero">
 		  <h4>{{hero.name}}</h4>
 		</div>
@@ -129,5 +123,5 @@ export class HeroDetailComponent implements OnInit{
 	`
 })
 export class DashboardComponent{
-	heroes: Hero[] = HEROES;
+    get countryCodes() { return HEROES; }
 }
