@@ -12,10 +12,7 @@ import { HeroService } from './hero.service';
 	`,
 	providers: [HeroService]
 })
-export class AppComponent implements OnInit {
+export class AppComponent {
 	constructor(private heroService: HeroService) { }
-	ngOnInit(): void {
-		this.heroService.getHeros()
-	}
 	title = "Tour of heroes"
 }
