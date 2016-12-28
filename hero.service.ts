@@ -9,14 +9,16 @@ export class HeroService {
 	url: string;
 	constructor(private http: Http){
 		this.url = "http://jsonplaceholder.typicode.com/users";
-		this.http = http;
 	}
 	getHeros(): Promise<Hero[]> {
 		if(!HEROES || HEROES.length == 0) {
 			return this.http.get(this.url)
 				.toPromise()
 				.then(response => {
-					HEROES = response.json();
+					//HEROES = response.json();
+					response.json().forEach(function(hero: Hero, index: number){
+						HEROES.push(new Hero(Number(hero.id),hero.name));
+					});
 				});
 		} else {
 			let promise: Promise<Hero[]> = new Promise<Hero[]>(function(resolve, reject){
@@ -25,12 +27,4 @@ export class HeroService {
 			return promise;
 		}
 	}
-	// getHero(id: any): Promise<Hero> {
-		// let promise : Promise<Hero> = new Promise<Hero>(function(resolve,reject){
-			// setTimeout(function(){
-				// resolve(HEROES[id]);
-			// },3000);
-		// })
-		// return promise;
-	// }
 }
